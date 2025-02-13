@@ -1,20 +1,19 @@
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
-from sqlalchemy.orm import sessionmaker
+from sqlalchemy.orm import sessionmaker, session
+from sqlalchemy import create_engine
 import os
 
-DATABASE_URL = os.getenv("DATABASE_URL", "postgresql+asyncpg://postgres:password@db:5432/moderation")
+# Async Configuration (for FastAPI)
+DATABASE_URL_ASYNC = os.getenv("DATABASE_URL", "postgresql+asyncpg://postgres:password@db:5432/moderation")
+async_engine = create_async_engine(DATABASE_URL_ASYNC, future=True, echo=True)
+AsyncSessionLocal = sessionmaker(bind=async_engine, class_=AsyncSession, expire_on_commit=False)
 
-# Create async engine
-engine = create_async_engine(DATABASE_URL, future=True, echo=True)
+# Sync Configuration (for Celery)
+DATABASE_URL_SYNC = os.getenv("DATABASE_URL", "postgresql://postgres:password@db:5432/moderation").replace("+asyncpg", "")
+sync_engine = create_engine(DATABASE_URL_SYNC)
+SyncSessionLocal = sessionmaker(bind=sync_engine, autocommit=False, autoflush=False)
 
-# Create async session
-AsyncSessionLocal = sessionmaker(
-    bind=engine,
-    class_=AsyncSession,
-    expire_on_commit=False
-)
-
-# Dependency for database session
-async def get_db():
+# Dependency for FastAPI async sessions
+async def get_db_session():
     async with AsyncSessionLocal() as session:
         yield session
