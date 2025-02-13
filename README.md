@@ -1,6 +1,6 @@
 # Content Moderation System
 
-A **scalable content moderation system** using **FastAPI, Celery, Redis, PostgreSQL, and Docker** that integrates with **OpenAI’s moderation API** for text content filtering. The system supports **rate limiting, caching, task queues, monitoring, and structured logging**.
+A **scalable content moderation system** using **FastAPI, Celery, Redis, PostgreSQL, and Docker** that integrates with **OpenAI’s moderation API** for text content filtering. The system supports **caching, task queues, monitoring, and structured logging**.
 
 ---
 
@@ -25,12 +25,20 @@ cd content-moderation
 ```
 
 ### **2 Create an Environment File**
-Create a `.env` file in the root directory and add:
+Create a `.env` file in the root directory and add (.env_example for reference):
 ```env
 DATABASE_URL=postgresql+asyncpg://postgres:password@db:5432/moderation
 REDIS_URL=redis://redis:6379/0
-SECRET_KEY=supersecretkey
-OPENAPI_KEY = ""
+CELERY_RESULT_BACKEND=redis://redis:6379/0
+CELERY_BROKER_URL=amqp://guest:guest@rabbitmq:5672//
+SECRET_KEY=your_secret_key_here
+OPENAI_API_KEY=your_openai_api_key_here
+LOG_LEVEL=INFO
+MAX_WORKERS=4
+ENVIRONMENT=development
+RATE_LIMIT_PER_MINUTE=60
+RATE_LIMIT_BURST=10
+CACHE_TTL=3600
 ```
 
 ### **3 Start the Application with Docker**
@@ -44,7 +52,7 @@ This will start:
 - Redis on `localhost:6379`
 - Prometheus on `http://localhost:9090`
 - Grafana on `http://localhost:3000`
-
+- RabbitMQ on `http://localhost:15672`
 ---
 
 ## API Endpoints
