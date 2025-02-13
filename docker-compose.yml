@@ -9,10 +9,39 @@ services:
     depends_on:
       - db
       - redis
+      - rabbitmq
     env_file:
       - .env
+    environment:
+      - CELERY_BROKER_URL=amqp://guest:guest@rabbitmq:5672//
+      - CELERY_RESULT_BACKEND=redis://redis:6379/0
     volumes:
       - .:/app
+
+  celery_worker:
+    build: .
+    container_name: celery_worker
+    command: poetry run celery -A app.config.celery worker --loglevel=info
+    depends_on:
+      - rabbitmq
+      - redis
+    env_file:
+      - .env
+    environment:
+      - CELERY_BROKER_URL=amqp://guest:guest@rabbitmq:5672//
+      - CELERY_RESULT_BACKEND=redis://redis:6379/0
+    volumes:
+      - .:/app
+
+  rabbitmq:
+    image: rabbitmq:3-management
+    container_name: rabbitmq
+    ports:
+      - "5672:5672"  # AMQP protocol port
+      - "15672:15672"  # Management interface port
+    environment:
+      - RABBITMQ_DEFAULT_USER=guest
+      - RABBITMQ_DEFAULT_PASS=guest
 
   db:
     image: postgres:16
