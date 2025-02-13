@@ -3,7 +3,7 @@ import os
 from sqlalchemy import engine_from_config
 from sqlalchemy import pool
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncEngine
-from app.config.db import DATABASE_URL
+from app.config.db import DATABASE_URL_SYNC as DATABASE_URL
 from app.models.moderation import Base  
 from alembic import context
 
